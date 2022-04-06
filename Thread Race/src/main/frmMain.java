@@ -35,12 +35,21 @@ public class frmMain extends javax.swing.JFrame {
         this.hilo1 = new Proceso(lblNumeroHilo1);
         this.hilo2 = new Proceso(lblNumeroHilo2);
         this.hilo3 = new Proceso(lblNumeroHilo3);
-        regionCritica[0] = 0;
-        regionCritica[1] = 0;
-        regionCritica[2] = 0;
+    }
+    
+    public synchronized void Monitor(JLabel etiqueta, Integer valor){
+        etiqueta.setText(String.valueOf(valor));
+        //Region critica
+        regionCritica[posicion] = valor;
+        String contenidoRC = "[" + String.valueOf(regionCritica[0]) + "]";
+        contenidoRC += "[" + String.valueOf(regionCritica[1]) + "]";
+        contenidoRC += "[" + String.valueOf(regionCritica[2]) + "]";
+        lblRegionCritica.setText(contenidoRC);
+        posicion++;
     }
     
     public class Proceso extends Thread {
+
         int numeroAGenerar;
         JLabel miEtiqueta;
         String status;
@@ -49,27 +58,13 @@ public class frmMain extends javax.swing.JFrame {
             numeroAGenerar = 0;
             this.miEtiqueta = etiqueta;
         }
-        
         @Override
         public void run() {
-            // Operaciones pre región crítica
-            this.numeroAGenerar = (int)(Math.random()* 9 + 1);
-            this.miEtiqueta.setText(String.valueOf(numeroAGenerar));
-            // Región crítica
-            try {
-                mutex.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            regionCritica[posicion] = this.numeroAGenerar;
-            String contenidoRC = "[" + String.valueOf(regionCritica[0]) + "]";
-            contenidoRC += "[" + String.valueOf(regionCritica[1]) + "]";
-            contenidoRC += "[" + String.valueOf(regionCritica[2]) + "]";
-            lblRegionCritica.setText(contenidoRC);
-            posicion++;
-            mutex.release(); // Libera región crítica
+            this.numeroAGenerar = (int) (Math.random() * 9 + 1);
+            Monitor(miEtiqueta, numeroAGenerar);
             // Operaciones post región crítica
             System.out.println("Proceso finalizado con status: 0");
+            
         }
     }
 
